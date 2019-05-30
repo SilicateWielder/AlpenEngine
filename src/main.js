@@ -112,12 +112,12 @@ class MyGame extends Thread
 	{
 		cam.roll(1, 1, 1);
 		
-		model.rotate(cam.rot.x, cam.rot.y, cam.rot.z, 0, 0, 0);
+		model.rotate(cam.rot.x, cam.rot.y, cam.rot.z, true);
 	}
 
 	on_render()
 	{
-		model.blit(0, 0, 0);
+		model.blit(0, 0, 0, true);
 		
 		renderStats(font, cam);
 	}

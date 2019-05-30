@@ -10,6 +10,20 @@ import { Thread } from 'sphere-runtime';
 import PointCloud from './pointcloud.js';
 import Polygon from './polygon.js';
 
+function bubbleSortModel(arr)
+{
+	var len = arr.length;
+	for (var i = len-1; i>=0; i--){
+		for(var j = 1; j<=i; j++){
+			if(arr[j-1][1] < arr[j][1]){
+				var temp = arr[j-1];
+				arr[j-1] = arr[j];
+				arr[j] = temp;
+			}
+		}
+	}
+}
+
 export default
 class Model
 {
@@ -37,10 +51,22 @@ class Model
 		return this.cloud.addPoint(x, y, z);
 	}
 	
-	rotate(x, y, z)
+	rotate(x, y, z, reorder = false)
 	{
 		this.cloud.rotate(x, y, z, this.pos.x, this.pos.y, this.pos.z);
 		this.rot = {"x":x, "y":y, "z":z};
+		
+		
+		if(reorder)
+		{
+			// Update distance of each face, if applicable.
+			for(let p = 0; p < this.polydefs.length; p++)
+			{
+				this.getPolyDist(p);
+			}
+			// Sort faces
+			bubbleSortModel(this.polydefs);
+		}
 	}
 	
 	move(x, y, z)
@@ -53,8 +79,26 @@ class Model
 		if(points.length == 4)
 		{
 			let map = new Polygon(this.cloud, points[0], points[1], points[2], points[3], flipped, texture);
-			this.polydefs.push(map);
+			this.polydefs.push([map, null]);
 		}
+	}
+	
+	getPolyDist(id)
+	{
+		let poly = this.polydefs[id][0];
+		let p1 = this.cloud.get(poly.p1).pub.z;
+		let p2 = this.cloud.get(poly.p2).pub.z;
+		let p3 = this.cloud.get(poly.p3).pub.z;
+		let p4 = this.cloud.get(poly.p4).pub.z;
+		
+		let dist = (p1 + p2 + p3 + p4)/4;
+		this.polydefs[id][1] = dist;
+		return dist;
+	}
+	
+	reorder()
+	{
+		bubbleSortModel(this.polydefs);
 	}
 
 	// Allows you to blit a single polygon, as long as you know it's ID
@@ -62,7 +106,7 @@ class Model
 	blitPoly(id, x, y, z, texOverride)
 	{
 		// Grab point info.
-		let poly = this.polydefs[id];
+		let poly = this.polydefs[id][0];
 		let p1 = this.cloud.get(poly.p1).flatten(this.camera, x, y, z);
 		let p2 = this.cloud.get(poly.p2).flatten(this.camera, x, y, z);
 		let p3 = this.cloud.get(poly.p3).flatten(this.camera, x, y, z);
@@ -72,7 +116,7 @@ class Model
 		let texture = null;
 		if(texOverride == undefined)
 		{
-			texture = this.polydefs[id].texture;
+			texture = this.polydefs[id][0].texture;
 		} else {
 			texture = texOverride;
 		}
@@ -93,11 +137,17 @@ class Model
 		}
 	}
 	
-	blit(x, y, z)
+	blit(x, y, z, reorder = false)
 	{
 		let xp = x + this.camera.pos.x;
 		let yp = y + this.camera.pos.y;
 		let zp = z + this.camera.pos.z;
+		
+		if(reorder)
+		{
+			this.reorder();
+			// Count from 1 to 99.9 FM, The Rock!
+		}
 		
 		for(let p = 0; p < this.polydefs.length; p++)
 		{

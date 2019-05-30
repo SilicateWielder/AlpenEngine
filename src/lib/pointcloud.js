@@ -9,6 +9,29 @@
 import { Thread } from 'sphere-runtime';
 import Vector3 from './vect3.js';
 
+function bubbleSort(obj, arr)
+{
+	//print(arr);
+	let objC = Object.values(obj);
+	var len = objC.length;
+	for (let i = len-1; i>=0; i--){
+		for(var j = 1; j<=i; j++){
+			if(objC[j-1][0].pub.z > objC[j][0].pub.z){
+				var temp = objC[j-1];
+				objC[j-1] = objC[j];
+				objC[j] = temp;
+			}
+		}
+	}
+	
+	for(let i = 0; i < len; i++)
+	{
+		arr[i] = objC[i][1];
+	}
+	//print(arr);
+	return arr;
+}
+
 export default
 class PointCloud
 {
@@ -29,8 +52,8 @@ class PointCloud
 	{
 		let id = this.generateID(x, y, z);
 			
+		this.points[id] = [new Vector3(x, y, z), id];
 		this.ids.push(id);
-		this.points[id] = new Vector3(x, y, z);
 		
 		let index = this.ids.length - 1;
 		if (index < 0)
@@ -49,11 +72,16 @@ class PointCloud
 			{
 				let id = this.ids[p];
 			
-				this.points[id].rotate(rx, ry, rz, {"x":offX,"y":offY,"z":offZ});
+				this.points[id][0].rotate(rx, ry, rz, {"x":offX,"y":offY,"z":offZ});
 			}
 		}
 	}
 	
+	reorder()
+	{
+		bubbleSort(this.points, this.ids);
+	}
+		
 	blit()
 	{
 		for(let p = 0; p < this.ids.length; p++)
@@ -67,11 +95,11 @@ class PointCloud
 	
 	get(id)
 	{
-		return this.points[this.ids[id]];
+		return this.points[this.ids[id]][0];
 	}
 	
 	getPos(id)
 	{
-		return this.points[this.ids[id]].pub;
+		return this.points[this.ids[id]][0].pub;
 	}
 }
