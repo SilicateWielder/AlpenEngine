@@ -11,7 +11,6 @@ import Vector3 from './vect3.js';
 
 function bubbleSort(obj, arr)
 {
-	//print(arr);
 	let objC = Object.values(obj);
 	var len = objC.length;
 	for (let i = len-1; i>=0; i--){
@@ -28,7 +27,7 @@ function bubbleSort(obj, arr)
 	{
 		arr[i] = objC[i][1];
 	}
-	//print(arr);
+
 	return arr;
 }
 
@@ -41,6 +40,7 @@ class PointCloud
 		this.ids = [];
 		
 		this.rot = {"x":0, "y":0, "z":0};
+		this.offset = {"x":0, "y":0, "z":0};
 	}
 	
 	generateID(x, y, z)
@@ -66,7 +66,7 @@ class PointCloud
 	
 	rotate(rx, ry, rz, offX, offY, offZ)
 	{
-		if(rx != this.rot.x && ry != this.rot.y && rz != this.rot.z)
+		if(rx != this.rot.x || ry != this.rot.y || rz != this.rot.z)
 		{
 			for(let p = 0; p < this.ids.length; p++)
 			{
@@ -82,13 +82,13 @@ class PointCloud
 		bubbleSort(this.points, this.ids);
 	}
 		
-	blit()
+	blit(cam)
 	{
 		for(let p = 0; p < this.ids.length; p++)
 		{
 			let id = this.ids[p];
 			
-			let pos = this.points[id];
+			let pos = this.points[id][0];
 			cam.drawPoint(pos.pub.x, pos.pub.y, pos.pub.z);
 		}
 	}
@@ -101,5 +101,10 @@ class PointCloud
 	getPos(id)
 	{
 		return this.points[this.ids[id]][0].pub;
+	}
+
+	setPos(id, x, y, z)
+	{
+		this.points[this.ids[id]][0].adjust(x, y, z);
 	}
 }

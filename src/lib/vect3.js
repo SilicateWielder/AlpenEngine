@@ -13,9 +13,12 @@ class Vector3
 {
 	constructor(x = 0, y = 0, z = 0)
 	{
+		// This is the reference position. Any time Vector3#rotate is called, it bases it's calculations on these values.
 		this.x = x;
 		this.y = y;
 		this.z = z;
+
+		// 
 		this.ratio = 1;
 		
 		this.pub = {}
@@ -36,15 +39,21 @@ class Vector3
 	}
 
 	// Rotates a vector
+	// This is completely homebrew, 
 	rotate(rx, ry, rz, origin = {"x":0, "y":0, "z":0})
 	{
+		// Make sure that one value is different, to save time doing calculations.
 		if (rx != this.rot.x || ry != this.rot.y || rz != this.rot.z || this.origin != origin)
 		{
+			// Basically grabs a value detailing the offset of the rotation. useful for orbits and stuff.
 			this.origin = origin;
+
+			// Update the rotation values, that way we can have a reference for how far away a vector is from it's original state.
 			this.rot.x = rx;
 			this.rot.y = ry;
 			this.rot.z = rz;
 			
+			// Calculate the position 
 			let posX = this.x + origin.x;
 			let posY = this.y + origin.y;
 			let posZ = this.z + origin.z;
@@ -54,6 +63,7 @@ class Vector3
 			let rya = ry * this.ratio;
 			let rza = rz * this.ratio;
 
+			// Grab our sine and cosine values from the lookup table.
 			let xca = smath.cos(rxa); //cosa
 			let xsa = smath.sin(rxa); //sina
 			

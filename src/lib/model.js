@@ -44,6 +44,15 @@ class Model
 		this.mode.mixed = false;
 		this.mode.zsort = false;
 		this.mode.backcull = true;
+
+		this.collider = {
+			"xMin" : 0,
+			"xMax" : 0,
+			"yMin" : 0,
+			"yMax" : 0,
+			"zMin" : 0,
+			"zMax" : 0
+		};
 	}
 	
 	addPoint(x, y, z)
@@ -101,16 +110,177 @@ class Model
 		bubbleSortModel(this.polydefs);
 	}
 
+	// Calculates the collision boundaries of the model. coincidentally, this could also be used to calculate the model's dimensions.
+	findCollisionBounds() 
+	{
+		let xMin = 0;
+		let xMax = 0;
+		let yMin = 0;
+		let yMax = 0;
+		let zMin = 0;
+		let zMax = 0;
+
+		let xCache = [];
+		let yCache = [];
+		let zCache = [];
+
+		for (let p = 0; p < this.polydefs.length; p++)
+		{
+			let poly = this.polydefs[p][0]
+			let p1 = this.cloud.get(poly.p1);
+			let p2 = this.cloud.get(poly.p2);
+			let p3 = this.cloud.get(poly.p3);
+			let p4 = this.cloud.get(poly.p4);
+
+			//This should probably be really fast, so I'll write it all out manually for now.
+			if (p1.pub.x < xMin)
+			{
+				xMin = p1.pub.x; 
+			}
+
+			if (p1.pub.x > xMax)
+			{
+				xMax = p1.pub.x;
+			}
+
+			if (p2.pub.x < xMin)
+			{
+				xMin = p1.pub.x; 
+			}
+
+			if (p2.pub.x > xMax)
+			{
+				xMax = p1.pub.x;
+			}
+
+			if (p3.pub.x < xMin)
+			{
+				xMin = p1.pub.x; 
+			}
+
+			if (p3.pub.x > xMax)
+			{
+				xMax = p1.pub.x;
+			}
+
+			if (p4.pub.x < xMin)
+			{
+				xMin = p1.pub.x; 
+			}
+
+			if (p4.pub.x > xMax)
+			{
+				xMax = p1.pub.x;
+			}
+
+
+
+			if (p1.pub.y < yMin)
+			{
+				yMin = p1.pub.y; 
+			}
+
+			if (p1.pub.y > yMax)
+			{
+				yMax = p1.pub.y;
+			}
+
+			if (p2.pub.y < yMin)
+			{
+				yMin = p1.pub.y; 
+			}
+
+			if (p2.pub.y > yMax)
+			{
+				yMax = p1.pub.y;
+			}
+
+			if (p3.pub.y < yMin)
+			{
+				yMin = p1.pub.y; 
+			}
+
+			if (p3.pub.y > yMax)
+			{
+				yMax = p1.pub.y;
+			}
+
+			if (p4.pub.y < yMin)
+			{
+				yMin = p1.pub.y; 
+			}
+
+			if (p4.pub.y > yMax)
+			{
+				yMax = p1.pub.y;
+			}
+
+
+
+			if (p1.pub.z < zMin)
+			{
+				zMin = p1.pub.z; 
+			}
+
+			if (p1.pub.z > zMax)
+			{
+				zMax = p1.pub.z;
+			}
+
+			if (p2.pub.z < zMin)
+			{
+				zMin = p1.pub.z; 
+			}
+
+			if (p2.pub.z > zMax)
+			{
+				zMax = p1.pub.z;
+			}
+
+			if (p3.pub.z < zMin)
+			{
+				zMin = p1.pub.z; 
+			}
+
+			if (p3.pub.z > zMax)
+			{
+				zMax = p1.pub.z;
+			}
+
+			if (p4.pub.z < zMin)
+			{
+				zMin = p1.pub.z; 
+			}
+
+			if (p4.pub.z > zMax)
+			{
+				zMax = p1.pub.z;
+			}
+		}
+		this.collider = {
+			"xMin" : xMin,
+			"xMax" : xMax,
+			"yMin" : yMin,
+			"yMax" : yMax,
+			"zMin" : zMin,
+			"zMax" : zMax
+		};
+	}
+
 	// Allows you to blit a single polygon, as long as you know it's ID
 	// Additionally, you can override textures, useful for select rendering jobs.
 	blitPoly(id, x, y, z, texOverride)
 	{
 		// Grab point info.
 		let poly = this.polydefs[id][0];
-		let p1 = this.cloud.get(poly.p1).flatten(this.camera, x, y, z);
-		let p2 = this.cloud.get(poly.p2).flatten(this.camera, x, y, z);
-		let p3 = this.cloud.get(poly.p3).flatten(this.camera, x, y, z);
-		let p4 = this.cloud.get(poly.p4).flatten(this.camera, x, y, z);
+		let posX = x + this.pos.x;
+		let posY = y + this.pos.y;
+		let posZ = z + this.pos.z;
+
+		let p1 = this.cloud.get(poly.p1).flatten(this.camera, posX, posY, posZ);
+		let p2 = this.cloud.get(poly.p2).flatten(this.camera, posX, posY, posZ);
+		let p3 = this.cloud.get(poly.p3).flatten(this.camera, posX, posY, posZ);
+		let p4 = this.cloud.get(poly.p4).flatten(this.camera, posX, posY, posZ);
 		
 		// Grab or assign a texture.
 		let texture = null;
@@ -152,6 +322,16 @@ class Model
 		for(let p = 0; p < this.polydefs.length; p++)
 		{
 			this.blitPoly(p, xp, yp, zp);
+		}
+	}
+
+	setMode(value, setting)
+	{
+		if(this.mode[value] != undefined)
+		{
+			print(this.mode[value]);
+			this.mode[value] = setting;
+			print(this.mode[value]);
 		}
 	}
 }

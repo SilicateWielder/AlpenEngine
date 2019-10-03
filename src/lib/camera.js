@@ -12,6 +12,47 @@ import Culler from './culler.js';
 import ScalingTex from './scalingtex.js';
 import Lighting from './lighting.js';
 
+function oobcull(points, rangeX, rangeY)
+{
+	let p1 = points[0];
+	let p2 = points[1];
+	let p3 = points[2];
+	let p4 = points[3];
+
+	let p1check = true;
+	let p2check = true;
+	let p3check = true;
+	let p4check = true;
+
+	let minX = -200;
+	let minY = -200;
+	let maxX = rangeX + 100;
+	let maxY = rangeY + 100;
+	if(p1.x < minX || p1.x > maxX || p1.y < minY || p1.y > maxY)
+	{
+		p1check = false;
+	}
+	if(p2.x < minX || p2.x > maxX || p2.y < minY || p2.y > maxY)
+	{
+		p2check = false;
+	}
+	if(p3.x < minX || p3.x > maxX || p3.y < minY || p3.y > maxY)
+	{
+		p3check = false;
+	}
+	if(p4.x < minX || p4.x > maxX || p4.y < minY || p4.y > maxY)
+	{
+		p4check = false;
+	}
+
+	if (p1check && p2check && p3check && p4check)
+	{
+		return false;
+	} else {
+		return true;
+	}
+};
+
 export default
 class Camera
 {
@@ -28,6 +69,9 @@ class Camera
 		this.mid = {};
 		this.mid.x = width / 2;
 		this.mid.y = height / 2;
+
+		this.w = width;
+		this.h = height;
 		
 		this.texData = [];
 		this.pntData = [];
@@ -121,15 +165,18 @@ class Camera
 		}
 		
 		// If the polygon is flipped, invert the render status.
-		if(polydata.flipped && mode.backcull)
+		if(polydata.flipped)
 		{
 			render = !render;
 		}
 		
 		// If renderable, render it!
-		if(render)
+		if(render || !mode.backcull)
 		{
-			polydata.texture.transformBlit(points[0], points[1], points[2], points[3]);
+			if(!oobcull(points, this.w, this.h))
+			{
+				polydata.texture.transformBlit(points[0], points[1], points[2], points[3]);
+			}
 		}
 	}
 }
